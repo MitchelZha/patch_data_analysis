@@ -70,28 +70,28 @@
 
 
 %             %%
-            freq_Hz = 25;
-            phase_width_ms = 1;
-            nkt = 50;
-            crop_ratio = 0.67;
-            peak_threshold_mV = -20;     
-            peak_distance_sr = 35;
-            
-            addpath 'D:\5-Mingsong'; addpath 'D:\5-Mingsong\Code';
-            cd 'D:\5-Mingsong\220406';
-            recording_dir = 'Clampex\2022_04_06_0029.abf';
-            stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=52_contrast=32';
-            name = ['220406 OFFT AD ' stim_dir '.fig'];
-            bin_left_sr = []; bin_right_sr =[];
-            
-            % [all_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio);
-            % sta_playback(25, 1, 5, all_sta, dir_sta, indir_sta, stim_mean)
+%             freq_Hz = 25;
+%             phase_width_ms = 1;
+%             nkt = 50;
+%             crop_ratio = 0.67;
+%             peak_threshold_mV = -20;     
+%             peak_distance_sr = 35;
+%             
+%             addpath 'D:\5-Mingsong'; addpath 'D:\5-Mingsong\Code';
+%             cd 'D:\5-Mingsong\220406';
+%             recording_dir = 'Clampex\2022_04_06_0029.abf';
+%             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=52_contrast=32';
+%             name = ['220406 OFFT AD ' stim_dir '.fig'];
+%             bin_left_sr = []; bin_right_sr =[];
+%             
+%             % [all_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio);
+%             % sta_playback(25, 1, 5, all_sta, dir_sta, indir_sta, stim_mean)
 
 %             stim_amp = stim_amp(1:2563);
 %             trgs_on = trgs_on(1:length(trgs_on)*crop_ratio);
 
 %%
-% function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr)
+function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr)
 %% Fomular
     close all
 
@@ -135,12 +135,8 @@
 
 %% shorten the whitenoise
 
-%     stim_amp = stim_amp(1:length(stim_amp)*crop_ratio);
-%     trgs_on = trgs_on(1:length(trgs_on)*crop_ratio);
-
-     stim_amp = stim_amp(1:2563);
-            trgs_on = trgs_on(1:length(trgs_on)*crop_ratio);
-
+    stim_amp = stim_amp(1:length(stim_amp)*crop_ratio);
+    trgs_on = trgs_on(1:length(trgs_on)*crop_ratio);
 
     stim_mean = mean(stim_amp);
     
@@ -313,4 +309,4 @@
     dir_sta= dir_sta(1:nkt/2+2); 
     indir_sta= indir_sta(1:nkt/2+2);
 
-% end
+end
