@@ -17,8 +17,8 @@
 %             name = ['220406 ONS 1 ' stim_dir '.fig'];
 %             bin_left_sr = []; bin_right_sr =[];
 %             
-%             % [all_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr);
-%             % sta_playback(25, 1, 10, all_sta, dir_sta, indir_sta, stim_mean)
+%             % [network_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr);
+%             % sta_playback(25, 1, 10, network_sta, dir_sta, indir_sta, stim_mean)
 
 
 
@@ -38,8 +38,8 @@
 %             bin_right_sr = [];
 %             peak_threshold_mV = -35;     
 %             peak_distance_sr = 35;
-%             % [all_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr);
-%             % sta_playback(25, 1, 10, all_sta, dir_sta, indir_sta, stim_mean)
+%             % [network_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr);
+%             % sta_playback(25, 1, 10, network_sta, dir_sta, indir_sta, stim_mean)
 % 
 %             stim_amp = stim_amp(1:4000);
 %             trgs_on = trgs_on(1:4000);
@@ -61,8 +61,8 @@
 %             name = ['220406 ONS ' stim_dir '.fig'];
 %             bin_left_sr = []; bin_right_sr =[];
 %             
-%             % [all_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio);
-%             % sta_playback(25, 1, 5, all_sta, dir_sta, indir_sta, stim_mean)
+%             % [network_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio);
+%             % sta_playback(25, 1, 5, network_sta, dir_sta, indir_sta, stim_mean)
 % 
 %             stim_amp = [stim_amp(1:1375); stim_amp(1700:end)]
 %             trgs_on = [trgs_on(1:1375); trgs_on(1700:end)]
@@ -84,14 +84,14 @@
 %             name = ['220406 OFFT AD ' stim_dir '.fig'];
 %             bin_left_sr = []; bin_right_sr =[];
 %             
-%             % [all_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio);
-%             % sta_playback(25, 1, 5, all_sta, dir_sta, indir_sta, stim_mean)
+%             % [network_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio);
+%             % sta_playback(25, 1, 5, network_sta, dir_sta, indir_sta, stim_mean)
 
 %             stim_amp = stim_amp(1:2563);
 %             trgs_on = trgs_on(1:length(trgs_on)*crop_ratio);
 
 %%
-function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr)
+function [network_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr)
 %% Fomular
     close all
 
@@ -140,32 +140,33 @@ function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_wid
 
     stim_mean = mean(stim_amp);
     
-%%   All STA
+%%   BC+PR STA
     [spks_amp, spks_timing] = findpeaks(trace(:,1),'MINPEAKHEIGHT',peak_threshold_mV, 'MinPeakDistance',peak_distance_sr);
     
     spks_count = [];
     for i = 1:length(trgs_on)
     
-        spks = find(spks_timing > trgs_on(i) & spks_timing < trgs_on(i) + peroid_dur_sr );
+        spks = find(spks_timing > trgs_on(i) + pulse_width_sr +10 & spks_timing < trgs_on(i) + peroid_dur_sr );
     
         spks_count = [spks_count length(spks)];
     
     end
     
-    [all_sta, stc, mu, cov] = simpleSTC_hamed(stim_amp, spks_count', nkt);
+    [network_sta, stc, mu, cov] = simpleSTC_hamed(stim_amp, spks_count', nkt);
     
     tvec = (-nkt/2+1:nkt/2)'*1/freq_Hz-.5/freq_Hz;                                       % vector of time indices (in units of stim frames)
     
-    fig(3) = figure;
+    fig = figure;
+    subplot(3,2,2);
     patch([-2 0 0 -2],[1200 1200 0  0],'black','FaceAlpha',.05)
     hold on
-    plot(tvec, all_sta,'LineWidth',2)
+    plot(tvec, network_sta,'LineWidth',2)
     line([tvec(1),tvec(end)],[stim_mean ,stim_mean],'Color','k','LineStyle','--')
     xlabel('time before spike (sec)'); 
     ylabel('E-STA (A.U)');
     ylim([stim_mean-20, stim_mean+20])
     xlim([-1,.5])
-    title(['All ', name], ['spike count=', num2str(sum(spks_count))])
+    title('Network (BC+PR)', ['spike count=', num2str(sum(spks_count))])
     hold off
 
 
@@ -173,7 +174,7 @@ function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_wid
     dir_spks_count = [];
     for i = 1:length(trgs_on) 
     
-        spks = find(spks_timing > trgs_on(i) + pulse_width_sr & spks_timing < trgs_on(i) + bin_left_sr);
+        spks = find(spks_timing > trgs_on(i) + pulse_width_sr + 10 & spks_timing < trgs_on(i) + bin_left_sr);
     
         dir_spks_count = [dir_spks_count length(spks)];
     
@@ -183,7 +184,7 @@ function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_wid
     
     tvec = (-nkt/2+1:nkt/2)'*1/freq_Hz-.5/freq_Hz;                                       % vector of time indices (in units of stim frames)
     
-    fig(2) = figure;
+    subplot(3,2,4);
     patch([-2 0 0 -2],[1200 1200 0  0],'black','FaceAlpha',.05)
     hold on
     plot(tvec, dir_sta,'LineWidth',2)
@@ -192,7 +193,7 @@ function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_wid
     ylabel('E-STA (A.U)');
     ylim([stim_mean-20, stim_mean+20])
     xlim([-1,.5])
-    title(['BC ' name], ['spike count=', num2str(sum(dir_spks_count))])
+    title('BC', ['spike count=', num2str(sum(dir_spks_count))])
     hold off
 
 %% indir spikes STA
@@ -209,7 +210,7 @@ function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_wid
     
     tvec = (-nkt/2+1:nkt/2)'*1/freq_Hz-.5/freq_Hz;                                       % vector of time indices (in units of stim frames)
     
-    fig(1) = figure;
+    subplot(3,2,6);
     patch([-2 0 0 -2],[1200 1200 0  0],'black','FaceAlpha',.05)
     hold on
     plot(tvec, indir_sta,'LineWidth',2)
@@ -218,7 +219,7 @@ function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_wid
     ylabel('E-STA (A.U)');
     ylim([stim_mean-20, stim_mean+20])
     xlim([-1,.5])
-    title(['indirect ' name], ['spike count=', num2str(sum(indir_spks_count))])
+    title('PR', ['spike count=', num2str(sum(indir_spks_count))])
     hold off
 
 
@@ -236,14 +237,14 @@ function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_wid
     
     end
     
-    fig(4) = figure;
+    subplot(3,2,[1,3,5]);
     patch([bin_left_sr,bin_right_sr,bin_right_sr,bin_left_sr],[-1,-1,1000,1000],'black','FaceAlpha',0.05)
     hold on
     scatter(raster_spks_count(:,1),raster_spks_count(:,2),5,'filled')
     hold off
     xlim([0 peroid_dur_sr])
     ylim([0 max(stim_amp)])
-    xline(pulse_width_sr,'--r')
+    xline(pulse_width_sr,'--r',{'pulse offset'})
     xticks([0:peroid_dur_sr/40:peroid_dur_sr])
     xticklabels([0:peroid_dur_ms/40:peroid_dur_ms])
     xlabel('Time (ms)')
@@ -267,7 +268,7 @@ function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_wid
     % 
     % end
     % 
-    % fig(3) = figure;
+    % figure;
     % 
     % %[C, ia] = unique(mul_raster_spks_count(:,2),'rows');
     % %scatter(mul_raster_spks_count(ia,1),mul_raster_spks_count(ia,2),5,'filled')
@@ -305,7 +306,7 @@ function [all_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_wid
 %%
     saveas(fig,name)
     
-    all_sta= all_sta(1:nkt/2+2);
+    network_sta= network_sta(1:nkt/2+2);
     dir_sta= dir_sta(1:nkt/2+2); 
     indir_sta= indir_sta(1:nkt/2+2);
 

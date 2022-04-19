@@ -79,7 +79,8 @@ function [max_fitresult_a, max_fitresult_b, max_fitresult_c]=threshold_finding(f
         
     end
     
-    fig(3) = figure;
+    fig = figure
+    subplot(2,3,[1,2,4,5]);
     patch([bin_left_sr,bin_right_sr,bin_right_sr,bin_left_sr],[-1000,-1000,1000,1000],'black','FaceAlpha',.05)
     hold on
     scatter3(all_spks_timing(:,1),all_spks_timing(:,2),all_spks_timing(:,3),5,'filled');
@@ -87,7 +88,9 @@ function [max_fitresult_a, max_fitresult_b, max_fitresult_c]=threshold_finding(f
     view(2)
     xlim([0 peroid_dur_sr])
     ylim([0 -min(stim_amp)])
-    xline(pluse_width_sr,'r')
+
+    xline(pluse_width_sr,'--r',{'pulse offset'})
+
     xticks([0:peroid_dur_sr/40:peroid_dur_sr])
     xticklabels([0:peroid_dur_ms/40:peroid_dur_ms])
     xlabel('Time (ms)')
@@ -113,16 +116,16 @@ function [max_fitresult_a, max_fitresult_b, max_fitresult_c]=threshold_finding(f
     
     dir_spks_num=[i accumarray(k,dir_spks_count(:,1),[],@mean)];
 
-    fig(2) = figure;
+    subplot(2,3,3);
     [dir_fitresult, dir_gof] = FitMitch(dir_spks_num(:,1),dir_spks_num(:,2));
     xlabel('Amplitude (uA)')
     ylabel('Spikes number')
     xlim([0 160])
-    title(['BC ',name],['r^2=',num2str(dir_gof.rsquare), '  a=',num2str(dir_fitresult.a),'  b=', num2str(dir_fitresult.b), '  c=',num2str(dir_fitresult.c)])
+    title('BC',['r^2=',num2str(dir_gof.rsquare), '  a=',num2str(dir_fitresult.a),'  b=', num2str(dir_fitresult.b), '  c=',num2str(dir_fitresult.c)])
     legend('OFF')
 
 
-%% indirect Sigmoid
+%% PR Sigmoid
     all_spks_count = [];
     
     for i = 1:length(amp_trigs_mat)
@@ -159,12 +162,12 @@ function [max_fitresult_a, max_fitresult_b, max_fitresult_c]=threshold_finding(f
 
 % Maximun sigmoid
    
-    fig(1) = figure;
+    subplot(2,3,6);
     [max_fitresult, max_gof] = FitMitch(mean_spks_num(:,1),mean_spks_num(:,2));
     xlabel('Amplitude (uA)')
     ylabel('Spikes number')
     xlim([0 160])
-    title(['indirect ',name],['r^2=',num2str(max_gof.rsquare), '  a=',num2str(max_fitresult.a),'  b=', num2str(max_fitresult.b), '  c=',num2str(max_fitresult.c)])
+    title('PR',['r^2=',num2str(max_gof.rsquare), '  a=',num2str(max_fitresult.a),'  b=', num2str(max_fitresult.b), '  c=',num2str(max_fitresult.c)])
     legend('OFF')
 
 %% Plot for adjusting findpeak threshold

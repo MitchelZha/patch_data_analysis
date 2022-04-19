@@ -49,7 +49,7 @@ function [max_fitresult_a, max_fitresult_b, max_fitresult_c]=threshold_finding_2
     
     amp_trigs_mat = [amp_trigs_mat; end_trig];                                 % add aditional ending trigger to make for loop easier
 
-%% raster
+%% Raster
 
     train_on = amp_trigs_mat(find(diff(amp_trigs_mat(:,2)) > pulsesintrain * peroid_dur_sr) + 1,:);       % find the end of each train, +1 make this line find the start of pulses  
     
@@ -72,7 +72,8 @@ function [max_fitresult_a, max_fitresult_b, max_fitresult_c]=threshold_finding_2
         
     end
 
-    fig(3) = figure;
+    fig = figure
+    subplot(2,3,[1,2,4,5]);
     scatter3(all_spks_timing(:,1),all_spks_timing(:,2),all_spks_timing(:,3),70,'|');
     view(2)
     
@@ -81,7 +82,7 @@ function [max_fitresult_a, max_fitresult_b, max_fitresult_c]=threshold_finding_2
     xlim([0 t_peroid_sr])
     ylim([0 -min(stim_amp)])
 
-    xline([pluse_width_sr, pluse_width_sr + peroid_dur_sr, pluse_width_sr + peroid_dur_sr*2, pluse_width_sr + peroid_dur_sr*3, pluse_width_sr + peroid_dur_sr*4,pluse_width_sr + peroid_dur_sr*5],'r')
+    xline([pluse_width_sr, pluse_width_sr + peroid_dur_sr, pluse_width_sr + peroid_dur_sr*2, pluse_width_sr + peroid_dur_sr*3, pluse_width_sr + peroid_dur_sr*4,pluse_width_sr + peroid_dur_sr*5],'--r')
     xline([bin_left_sr, bin_left_sr + peroid_dur_sr, bin_left_sr + peroid_dur_sr*2, bin_left_sr + peroid_dur_sr*3, bin_left_sr + peroid_dur_sr*4,bin_left_sr + peroid_dur_sr*5])
     xline(bin_right_sr)                                                    %%%%%% need adjust for each protocol
 
@@ -121,12 +122,12 @@ function [max_fitresult_a, max_fitresult_b, max_fitresult_c]=threshold_finding_2
     dir_sum_spks_num=[i accumarray(k,dir_spks_count(:,1),[],@sum)];
     dir_mean_spks_num = [dir_sum_spks_num(:,1) dir_sum_spks_num(:,2)/repetition];
     
-    fig(2) = figure;
+    subplot(2,3,3);
     [dir_fitresult, dir_gof] = FitMitch(dir_mean_spks_num(:,1),dir_mean_spks_num(:,2));
     xlabel('Amplitude (uA)')
     ylabel('Spikes number')
     xlim([0 160])
-    title(['BC ',name],['r^2=',num2str(dir_gof.rsquare), '  a=',num2str(dir_fitresult.a),'  b=', num2str(dir_fitresult.b), '  c=',num2str(dir_fitresult.c)])
+    title(['BC',],['r^2=',num2str(dir_gof.rsquare), '  a=',num2str(dir_fitresult.a),'  b=', num2str(dir_fitresult.b), '  c=',num2str(dir_fitresult.c)])
     legend('OFF')
 
 %% Indirect sigmoid
@@ -177,12 +178,12 @@ function [max_fitresult_a, max_fitresult_b, max_fitresult_c]=threshold_finding_2
     sum_spks_num=[i accumarray(k,all_spks_count(:,1),[],@sum)];
     mean_spks_num = [sum_spks_num(:,1) sum_spks_num(:,2)/repetition];
     
-    fig(1) = figure;
+    subplot(2,3,6);
     [max_fitresult, max_gof] = FitMitch(mean_spks_num(:,1),mean_spks_num(:,2));
     xlabel('Amplitude (uA)')
     ylabel('Spikes number')
     xlim([0 160])
-    title(['Indirect ',name],['r^2=',num2str(max_gof.rsquare), '  a=',num2str(max_fitresult.a),'  b=', num2str(max_fitresult.b), '  c=',num2str(max_fitresult.c)])
+    title(['PR'],['r^2=',num2str(max_gof.rsquare), '  a=',num2str(max_fitresult.a),'  b=', num2str(max_fitresult.b), '  c=',num2str(max_fitresult.c)])
     legend('OFF')
 
 %% plot for adjusting findpeak threshold
