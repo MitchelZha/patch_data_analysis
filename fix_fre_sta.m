@@ -1,34 +1,58 @@
-%% Test
-% clc
-% clear all
+%             %% Test
+%             clc
+%             clear all
 %  
 %             %%
+%             addpath 'D:\OneDrive - UNSW\ephys'; addpath 'D:\OneDrive - UNSW\ephys\patch_data_analysis';
 %             freq_Hz = 25;
 %             phase_width_ms = 1;
 %             nkt = 50;
+%            
+%             cd 'D:\OneDrive - UNSW\ephys\220406';
+%             recording_dir = 'Clampex\2022_04_06_0007.abf';
+%             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=52_contrast=32';
+%             name = ['220406 ONS 1 last min ' stim_dir '.fig'];
+%            
 %             crop_ratio = 1;
 %             peak_threshold_mV = -15;     
 %             peak_distance_sr = 35;
-%             
-%             addpath 'D:\5-Mingsong'; addpath 'D:\5-Mingsong\Code';
-%             cd 'D:\5-Mingsong\220406';
-%             recording_dir = 'Clampex\2022_04_06_0007.abf';
-%             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=52_contrast=32';
-%             name = ['220406 ONS 1 ' stim_dir '.fig'];
-%             bin_left_sr = []; bin_right_sr =[];
-%             
+%             bin_left_sr = []; 
+%             bin_right_sr = [];
 %             % [network_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr);
 %             % sta_playback(25, 1, 10, network_sta, dir_sta, indir_sta, stim_mean)
 
 
 
 %             %%
-%             addpath 'D:\5-Mingsong'; addpath 'D:\5-Mingsong\Code';
+%             freq_Hz = 25;
+%             phase_width_ms = 0.5;
+%             nkt = 50;
+%             peak_threshold_mV = -40;     
+%             peak_distance_sr = 35;
+%             addpath 'D:\OneDrive - UNSW\ephys'; addpath 'D:\OneDrive - UNSW\ephys\patch_data_analysis';
+%             cd 'D:\OneDrive - UNSW\ephys\220304';
+%             recording_dir = 'Clampex\2022_03_04_0035.abf';
+%             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=50_contrast=17.05';
+%             bin_left_sr = []%100;
+%             bin_right_sr = []%500;
+%             name = ['220304  ONS ' stim_dir '.fig'];
+%             crop_ratio = 1;             
+%             %[network_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr);             
+%             %sta_playback(25, 1, 10, network_sta, dir_sta, indir_sta, stim_mean)
+% 
+%             stim_amp = stim_amp(1:2811);
+%             trgs_on = trgs_on(1:2811);
+    
+
+
+
+%             %%
+%             addpath 'D:\OneDrive - UNSW\ephys'; addpath 'D:\OneDrive - UNSW\ephys\patch_data_analysis';
 %             freq_Hz = 25;
 %             phase_width_ms = 1;
 %             nkt = 50;
 %            
-%             cd 'D:\5-Mingsong\220404';
+%             cd 'D:\OneDrive - UNSW\ephys\220404';
 %             recording_dir = 'Clampex\2022_04_04_0020.abf';
 %             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=85_contrast=32';
 %             name = ['220404 OFF 1 ' stim_dir '.fig'];
@@ -46,6 +70,7 @@
 
 
 
+
 %             %%
 %             freq_Hz = 25;
 %             phase_width_ms = 1;
@@ -54,8 +79,8 @@
 %             peak_threshold_mV = -20;     
 %             peak_distance_sr = 35;
 %             
-%             addpath 'D:\5-Mingsong'; addpath 'D:\5-Mingsong\Code';
-%             cd 'D:\5-Mingsong\220406';
+%             addpath 'D:\OneDrive - UNSW\ephys'; addpath 'D:\OneDrive - UNSW\ephys\patch_data_analysis'
+%             cd 'D:\OneDrive - UNSW\ephys\220406';
 %             recording_dir = 'Clampex\2022_04_06_0014.abf';
 %             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=52_contrast=20';
 %             name = ['220406 ONS ' stim_dir '.fig'];
@@ -69,6 +94,7 @@
 
 
 
+
 %             %%
 %             freq_Hz = 25;
 %             phase_width_ms = 1;
@@ -77,8 +103,8 @@
 %             peak_threshold_mV = -20;     
 %             peak_distance_sr = 35;
 %             
-%             addpath 'D:\5-Mingsong'; addpath 'D:\5-Mingsong\Code';
-%             cd 'D:\5-Mingsong\220406';
+%             addpath 'D:\OneDrive - UNSW\ephys'; addpath 'D:\OneDrive - UNSW\ephys\patch_data_analysis'
+%             cd 'D:\OneDrive - UNSW\ephys\220406';
 %             recording_dir = 'Clampex\2022_04_06_0029.abf';
 %             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=52_contrast=32';
 %             name = ['220406 OFFT AD ' stim_dir '.fig'];
@@ -116,7 +142,7 @@ function [network_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase
 
 
 %% processing recording
-    ttls = find(trace(1:end,2)>3);
+    ttls = find(trace(:,2)>3);
     
     trgs_on = ttls(find(diff(ttls)>pulse_width_sr*3)+1); 
     
