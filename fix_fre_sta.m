@@ -35,7 +35,7 @@
 %             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=50_contrast=17.05';
 %             bin_left_sr = []%100;
 %             bin_right_sr = []%500;
-%             name = ['220304  ONS ' stim_dir '.fig'];
+%             name = ['220304  ONS ' stim_dir '.mat'];
 %             crop_ratio = [0,1];             
 %             %[network_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr);             
 %             %sta_playback(25, 1, 10, network_sta, dir_sta, indir_sta, stim_mean)
@@ -55,7 +55,7 @@
 %             cd 'D:\OneDrive - UNSW\ephys\220404';
 %             recording_dir = 'Clampex\2022_04_04_0020.abf';
 %             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=85_contrast=32';
-%             name = ['220404 OFF 1 ' stim_dir '.fig'];
+%             name = ['220404 OFF 1 ' stim_dir '.mat'];
 %            
 %             crop_ratio = [0,1];
 %             bin_left_sr = 330; 
@@ -83,7 +83,7 @@
 %             cd 'D:\OneDrive - UNSW\ephys\220406';
 %             recording_dir = 'Clampex\2022_04_06_0014.abf';
 %             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=52_contrast=20';
-%             name = ['220406 ONS ' stim_dir '.fig'];
+%             name = ['220406 ONS ' stim_dir '.mat'];
 %             bin_left_sr = []; bin_right_sr =[];
 %             
 %             % [network_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio);
@@ -91,6 +91,7 @@
 % 
 %             stim_amp = [stim_amp(1:1375); stim_amp(1700:end)]
 %             trgs_on = [trgs_on(1:1375); trgs_on(1700:end)]
+
 
 
 
@@ -107,14 +108,17 @@
 %             cd 'D:\OneDrive - UNSW\ephys\220406';
 %             recording_dir = 'Clampex\2022_04_06_0029.abf';
 %             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=52_contrast=32';
-%             name = ['220406 OFFT AD ' stim_dir '.fig'];
+%             name = ['220406 OFFT AD ' stim_dir '.mat'];
 %             bin_left_sr = []; bin_right_sr =[];
 %             
 %             % [network_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio);
 %             % sta_playback(25, 1, 5, network_sta, dir_sta, indir_sta, stim_mean)
-
+% 
+% 
 %             stim_amp = stim_amp(1:2563);
 %             trgs_on = trgs_on(1:length(trgs_on)*crop_ratio);
+
+
 
 %%
 function [nt_sta, BC_sta, PR_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr)
@@ -158,6 +162,7 @@ function [nt_sta, BC_sta, PR_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_width_ms
 %% Crop the whitenoise
     stim_amp = stim_amp(1+length(stim_amp)*crop_ratio(1) : length(stim_amp)*crop_ratio(2));
     trgs_on = trgs_on(1+length(trgs_on)*crop_ratio(1) : length(trgs_on)*crop_ratio(2));
+
 
     stim_mean = mean(stim_amp);
 
@@ -250,9 +255,9 @@ function [nt_sta, BC_sta, PR_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_width_ms
 
          spks = spks_timing(find(spks_timing > trgs_on(i) & spks_timing < trgs_on(i) + peroid_dur_sr - 1 ));
 
-         spks = spks - trgs_on(i)
+         spks = spks - trgs_on(i);
 
-         spks(:, 2) = stim_amp(i)
+         spks(:, 2) = stim_amp(i);
 
          raster = [raster; spks];
     
