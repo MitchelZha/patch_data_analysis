@@ -11,9 +11,9 @@
 %             cd 'D:\OneDrive - UNSW\ephys\220406';
 %             recording_dir = 'Clampex\2022_04_06_0007.abf';
 %             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=52_contrast=32';
-%             name = ['220406 ONS 1 last min ' stim_dir '.fig'];
+%             name = ['220406 ONS 1 last min ' stim_dir '.mat'];
 %            
-%             crop_ratio = 1;
+%             crop_ratio = [0,1];
 %             peak_threshold_mV = -15;     
 %             peak_distance_sr = 35;
 %             bin_left_sr = []; 
@@ -36,7 +36,7 @@
 %             bin_left_sr = []%100;
 %             bin_right_sr = []%500;
 %             name = ['220304  ONS ' stim_dir '.fig'];
-%             crop_ratio = 1;             
+%             crop_ratio = [0,1];             
 %             %[network_sta, dir_sta, indir_sta, stim_mean] = fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr);             
 %             %sta_playback(25, 1, 10, network_sta, dir_sta, indir_sta, stim_mean)
 % 
@@ -57,7 +57,7 @@
 %             stim_dir = 'Mitch_Fixedwn_Freq=25_Mean=85_contrast=32';
 %             name = ['220404 OFF 1 ' stim_dir '.fig'];
 %            
-%             crop_ratio = 1;
+%             crop_ratio = [0,1];
 %             bin_left_sr = 330; 
 %             bin_right_sr = [];
 %             peak_threshold_mV = -35;     
@@ -75,7 +75,7 @@
 %             freq_Hz = 25;
 %             phase_width_ms = 1;
 %             nkt = 50;
-%             crop_ratio = 1;
+%             crop_ratio = [0,1];
 %             peak_threshold_mV = -20;     
 %             peak_distance_sr = 35;
 %             
@@ -117,7 +117,7 @@
 %             trgs_on = trgs_on(1:length(trgs_on)*crop_ratio);
 
 %%
-function [network_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr)
+function [nt_sta, BC_sta, PR_sta, stim_mean]=fix_fre_sta(freq_Hz, phase_width_ms, nkt, peak_threshold_mV, peak_distance_sr, recording_dir, stim_dir, name, crop_ratio, bin_left_sr, bin_right_sr)
 %% Fomular
     close all
 
@@ -132,7 +132,7 @@ function [network_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase
     pulse_width_sr = phase_width_sr *2;
 
     if isempty(bin_left_sr)
-        bin_left_sr = sample_rate * 0.008 + pulse_width_sr;                                       %  ML are within 8ms Jeson
+        bin_left_sr = sample_rate * 0.008 + pulse_width_sr;                                       %  ML are within 8ms Jeson and rizzo 
     end
     
     if isempty(bin_right_sr)
@@ -141,132 +141,135 @@ function [network_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase
 
 
 
-%% processing recording
+%% Processing recording
     ttls = find(trace(:,2)>3);
     
     trgs_on = ttls(find(diff(ttls)>pulse_width_sr*3)+1); 
     
     trgs_on = [ttls(1); trgs_on];
     
-    missing_trgs = find(diff(trgs_on) > peroid_dur_sr+5);
-    
-    for i = 1:length(missing_trgs)
-        
-        missing_trgs = find(diff(trgs_on) > peroid_dur_sr+5);
-    
-        trgs_on = [trgs_on(1:missing_trgs(1)); trgs_on(missing_trgs(1)) + peroid_dur_sr+5; trgs_on(missing_trgs(1)+1:end)];
-    
-    end
+%     missing_trgs = find(diff(trgs_on) > peroid_dur_sr+5);                                  %  Turn on when there is missing trigger caused by 0 amplitude
+%     for i = 1:length(missing_trgs)
+%         missing_trgs = find(diff(trgs_on) > peroid_dur_sr+5);
+%         trgs_on = [trgs_on(1:missing_trgs(1)); trgs_on(missing_trgs(1)) + peroid_dur_sr+5; trgs_on(missing_trgs(1)+1:end)];
+%     end
 
 
-%% shorten the whitenoise
-
-    stim_amp = stim_amp(1:length(stim_amp)*crop_ratio);
-    trgs_on = trgs_on(1:length(trgs_on)*crop_ratio);
+%% Crop the whitenoise
+    stim_amp = stim_amp(1+length(stim_amp)*crop_ratio(1) : length(stim_amp)*crop_ratio(2));
+    trgs_on = trgs_on(1+length(trgs_on)*crop_ratio(1) : length(trgs_on)*crop_ratio(2));
 
     stim_mean = mean(stim_amp);
-    
-%%   BC+PR STA
+
     [spks_amp, spks_timing] = findpeaks(trace(:,1),'MINPEAKHEIGHT',peak_threshold_mV, 'MinPeakDistance',peak_distance_sr);
     
-    spks_count = [];
+%%  Network(BC+PR) STA
+    nt_spks_count = [];
     for i = 1:length(trgs_on)
     
         spks = find(spks_timing > trgs_on(i) + pulse_width_sr +10 & spks_timing < trgs_on(i) + peroid_dur_sr );
     
-        spks_count = [spks_count length(spks)];
+        nt_spks_count = [nt_spks_count length(spks)];
     
     end
     
-    [network_sta, stc, mu, cov] = simpleSTC_hamed(stim_amp, spks_count', nkt);
+    [nt_sta, nt_stc, mu, cov] = simpleSTC_hamed(stim_amp, nt_spks_count', nkt);
     
     tvec = (-nkt/2+1:nkt/2)'*1/freq_Hz-.5/freq_Hz;                                       % vector of time indices (in units of stim frames)
     
     fig = figure;
-    subplot(3,2,2);
+    subplot(2,2,2);
     patch([-2 0 0 -2],[1200 1200 0  0],'black','FaceAlpha',.05)
     hold on
-    plot(tvec, network_sta,'LineWidth',2)
+    plot(tvec, nt_sta,'LineWidth',2)
     line([tvec(1),tvec(end)],[stim_mean ,stim_mean],'Color','k','LineStyle','--')
     xlabel('time before spike (sec)'); 
     ylabel('E-STA (A.U)');
     ylim([stim_mean-20, stim_mean+20])
     xlim([-1,.5])
-    title('Network (BC+PR)', ['spike count=', num2str(sum(spks_count))])
+    title('Network (BC+PR)', ['spike count=', num2str(sum(nt_spks_count))])
     hold off
 
 
-%% BC spikes STA
-    dir_spks_count = [];
+%% BC STA
+    BC_spks_count = [];
     for i = 1:length(trgs_on) 
     
         spks = find(spks_timing > trgs_on(i) + pulse_width_sr + 10 & spks_timing < trgs_on(i) + bin_left_sr);
     
-        dir_spks_count = [dir_spks_count length(spks)];
+        BC_spks_count = [BC_spks_count length(spks)];
     
     end
     
-    [dir_sta, stc, mu, cov] = simpleSTC_hamed(stim_amp, dir_spks_count', nkt);
+    [BC_sta, BC_stc, mu, cov] = simpleSTC_hamed(stim_amp, BC_spks_count', nkt);
     
     tvec = (-nkt/2+1:nkt/2)'*1/freq_Hz-.5/freq_Hz;                                       % vector of time indices (in units of stim frames)
     
-    subplot(3,2,4);
+    subplot(2,2,3);
     patch([-2 0 0 -2],[1200 1200 0  0],'black','FaceAlpha',.05)
     hold on
-    plot(tvec, dir_sta,'LineWidth',2)
+    plot(tvec, BC_sta,'LineWidth',2)
     line([tvec(1),tvec(end)],[stim_mean ,stim_mean],'Color','k','LineStyle','--')
     xlabel('time before spike (sec)'); 
     ylabel('E-STA (A.U)');
     ylim([stim_mean-20, stim_mean+20])
     xlim([-1,.5])
-    title('BC', ['spike count=', num2str(sum(dir_spks_count))])
+    title('BC', ['spike count=', num2str(sum(BC_spks_count))])
     hold off
 
-%% indir spikes STA
-    indir_spks_count = [];
+%% PR STA
+    PR_spks_count = [];
     for i = 1:length(trgs_on) 
     
         spks = find(spks_timing > trgs_on(i) + bin_left_sr & spks_timing < trgs_on(i) + bin_right_sr);
     
-        indir_spks_count = [indir_spks_count length(spks)];
+        PR_spks_count = [PR_spks_count length(spks)];
     
     end
     
-    [indir_sta, stc, mu, cov] = simpleSTC_hamed(stim_amp, indir_spks_count', nkt);
+    [PR_sta, PR_stc, mu, cov] = simpleSTC_hamed(stim_amp, PR_spks_count', nkt);
     
     tvec = (-nkt/2+1:nkt/2)'*1/freq_Hz-.5/freq_Hz;                                       % vector of time indices (in units of stim frames)
     
-    subplot(3,2,6);
+    subplot(2,2,4);
     patch([-2 0 0 -2],[1200 1200 0  0],'black','FaceAlpha',.05)
     hold on
-    plot(tvec, indir_sta,'LineWidth',2)
+    plot(tvec, PR_sta,'LineWidth',2)
     line([tvec(1),tvec(end)],[stim_mean ,stim_mean],'Color','k','LineStyle','--')
     xlabel('time before spike (sec)'); 
     ylabel('E-STA (A.U)');
     ylim([stim_mean-20, stim_mean+20])
     xlim([-1,.5])
-    title('PR', ['spike count=', num2str(sum(indir_spks_count))])
+    title('PR', ['spike count=', num2str(sum(PR_spks_count))])
     hold off
 
 
 %% Raster
-    raster_spks_count = [];
-    for i = 1:length(stim_amp)
+    raster = [];
+    for i = 1:length(trgs_on)
+
+         spks = spks_timing(find(spks_timing > trgs_on(i) & spks_timing < trgs_on(i) + peroid_dur_sr - 1 ));
+
+         spks = spks - trgs_on(i)
+
+         spks(:, 2) = stim_amp(i)
+
+         raster = [raster; spks];
     
-        trace_clip =  trace(trgs_on(i):trgs_on(i) + peroid_dur_sr - 1,:);
-    
-        [spks_amp,spks_timing] =  findpeaks(trace_clip(:,1),1,'MINPEAKHEIGHT',peak_threshold_mV, 'MinPeakDistance',peak_distance_sr);
-    
-        spks_timing(:, 2) = stim_amp(i);
-    
-        raster_spks_count = [raster_spks_count; spks_timing];
+%         trace_clip =  trace(trgs_on(i):trgs_on(i) + peroid_dur_sr - 1,:);
+%     
+%         [raster_spks_amp,raster_spks_timing] =  findpeaks(trace_clip(:,1),1,'MINPEAKHEIGHT',peak_threshold_mV, 'MinPeakDistance',peak_distance_sr);
+%     
+%         raster_spks_timing(:, 2) = stim_amp(i);
+%     
+%         raster = [raster; raster_spks_timing];
     
     end
     
-    subplot(3,2,[1,3,5]);
+    subplot(2,2,1);
     patch([bin_left_sr,bin_right_sr,bin_right_sr,bin_left_sr],[-1,-1,1000,1000],'black','FaceAlpha',0.05)
     hold on
-    scatter(raster_spks_count(:,1),raster_spks_count(:,2),5,'filled')
+    scatter(raster(:,1),raster(:,2),5,'filled')
     hold off
     xlim([0 peroid_dur_sr])
     ylim([0 max(stim_amp)])
@@ -314,9 +317,6 @@ function [network_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase
 
 
 %% For adjusting threshold
-
-    [spks_amp,spks_timing] =  findpeaks(trace(:,1),1,'MINPEAKHEIGHT',peak_threshold_mV, 'MinPeakDistance',peak_distance_sr);
-    
     figure;
     plot(trace)
     hold on
@@ -329,11 +329,12 @@ function [network_sta, dir_sta, indir_sta, stim_mean]=fix_fre_sta(freq_Hz, phase
     ylabel('Memberine potential (mV)')
     hold off
 
-%%
-    saveas(fig,name)
+%% Saving
+    save(name)
+%   saveas(fig, name)
     
-    network_sta= network_sta(1:nkt/2+2);
-    dir_sta= dir_sta(1:nkt/2+2); 
-    indir_sta= indir_sta(1:nkt/2+2);
+    nt_sta= nt_sta(1:nkt/2+2);
+    BC_sta= BC_sta(1:nkt/2+2); 
+    PR_sta= PR_sta(1:nkt/2+2);
 
 end
